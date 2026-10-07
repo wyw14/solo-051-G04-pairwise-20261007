@@ -7,6 +7,7 @@ import (
 	"github.com/wyw14/cry-161/internal/journal"
 	"github.com/wyw14/cry-161/internal/model"
 	"github.com/wyw14/cry-161/internal/optical"
+	"github.com/wyw14/cry-161/internal/quality"
 	"github.com/wyw14/cry-161/internal/quartz"
 	"github.com/wyw14/cry-161/internal/recipe"
 	"github.com/wyw14/cry-161/internal/run"
@@ -67,6 +68,10 @@ func (r *Runtime) Capture(sample model.ThicknessSample, layer int) (model.LayerE
 func (r *Runtime) RecordFrequency(runID model.ID, values []float64) {
 	copied := append([]float64(nil), values...)
 	r.Traces.AppendFrequency(runID, copied)
+}
+
+func (r *Runtime) EvaluateGate(runID model.ID, layer model.Layer, calibratedAt time.Time, spectrumScore float64) quality.Decision {
+	return quality.Evaluate(quality.GateInput{RunID: runID, Layer: layer, Calibration: quartz.DefaultCalibration(), CalibratedAt: calibratedAt, Samples: r.Window.Values(), SpectrumScore: spectrumScore, Now: time.Now().UTC()})
 }
 
 func (r *Runtime) Command(runID model.ID, revision int, kind model.CommandKind) (model.Command, error) {
